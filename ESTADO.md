@@ -1,6 +1,6 @@
 # Estado del proyecto (para continuar en el Mac)
 
-Última actualización: 2026-11-22 (versión 1.2.1-prueba)
+Última actualización: 2026-11-22 (versión 1.2.2-prueba)
 
 ## Objetivo
 App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular e importarlas al Mac.
@@ -43,14 +43,19 @@ App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular 
   falla. Causas probables aún sin confirmar: lectura perezosa de `NSImage(contentsOf:)` o descarga en cola detrás de las miniaturas.
 - Manual de usuario en `docs/manual-de-usuario.html`, con imágenes en `docs/img/`, actualizado con las funciones nuevas.
 - Pre-lanzamientos en GitHub Releases con el `.dmg` adjunto: `v1.0.0-prueba` (sin las funciones nuevas), `v1.1.0-prueba` y
-  `v1.2.0-prueba` y `v1.2.1-prueba` (la más reciente, la que debe usarse; incluye la lista, la selección por lotes, la
-  corrección de la vista previa y el ancho mínimo de 1150 px). El Pull Request #1 ya está fusionado en `main` (la rama `ccr-a8701da9-ja6pdv` se conservó, pero
+  `v1.2.0-prueba`, `v1.2.1-prueba` y `v1.2.2-prueba` (la más reciente, la que debe usarse; incluye la lista, la selección por
+  lotes, la corrección de la vista previa, el ancho mínimo de 1150 px y la corrección del cierre inesperado). El Pull Request #1 ya está fusionado en `main` (la rama `ccr-a8701da9-ja6pdv` se conservó, pero
   el trabajo continúa en `main`).
 - El manual y las capturas de `docs/img/` se regeneraron con la versión 1.2.1. El ancho mínimo de la ventana (`App.swift`)
   subió de 900 a 1150 px para que toda la barra superior (incluido «Seleccionar por lote» y el selector de vista) se vea
   sin plegarse bajo «>>».
 
 ## Pendiente / riesgos
+00. **La primera importación masiva cerró la app** («Conector Xiaomi se cerró inesperadamente») en la versión 1.2.1. Causa
+   probable, corregida en 1.2.2 y sin confirmar: carrera de datos en `ImportedIndex` (el hilo de importación escribía el
+   conjunto mientras la interfaz lo leía) y reescritura del JSON tras cada foto. Falta el informe del fallo
+   («ConectorXiaomi-…ips», en Ajustes del Sistema ▸ Privacidad y seguridad ▸ Análisis y mejoras ▸ Datos de análisis) para
+   confirmarlo. Si la 1.2.2 vuelve a cerrarse, ese informe es lo primero que hay que revisar; otra sospecha es la memoria.
 0. Probar con el celular real la **vista de lista**, la **selección por lotes** (por año y por rango) y la **vista previa**
    corregida. Con unas 24.000 fotos, comprobar cuánto tarda «Leyendo fotos…»: cada foto refresca la interfaz y puede ser lento.
 1. **Nunca se probó con el celular real.** Es lo principal. Compilar no garantiza que el delegado de ImageCaptureCore
