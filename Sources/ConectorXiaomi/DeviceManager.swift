@@ -293,6 +293,9 @@ final class DeviceManager: NSObject, ObservableObject {
                 }
             }
 
+            // El índice guarda por tandas; aquí se escribe lo que haya quedado pendiente.
+            index.guardar()
+
             // Solo se borra del celular lo verificado en el Mac, y nunca si la importación se canceló.
             let borrar = deleteAfter && !cancelled && !verified.isEmpty
             if borrar, let device = await MainActor.run(body: { self.selectedDevice }) {
