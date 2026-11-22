@@ -1,4 +1,5 @@
 import SwiftUI
+import AVKit
 import ImageCaptureCore
 
 struct ContentView: View {
@@ -26,11 +27,14 @@ struct ContentView: View {
                     Label(device.name ?? "Dispositivo", systemImage: "iphone")
                         .tag(ObjectIdentifier(device))
                 }
+                if let nombre = manager.demoDeviceName {
+                    Label(nombre, systemImage: "iphone")
+                }
             }
         }
         .navigationSplitViewColumnWidth(min: 200, ideal: 220)
         .overlay {
-            if manager.devices.isEmpty {
+            if manager.devices.isEmpty && manager.demoDeviceName == nil {
                 ContentUnavailableView("Sin dispositivos", systemImage: "cable.connector",
                                        description: Text("Conecta el Xiaomi por USB."))
                     .padding()
@@ -80,9 +84,14 @@ struct ContentView: View {
             Divider()
             importBar
         }
-        .navigationTitle(manager.selectedDevice?.name ?? "Galería")
+        .navigationTitle(manager.selectedDevice?.name ?? manager.demoDeviceName ?? "Galería")
         .navigationSubtitle("\(manager.photos.count) elementos · \(manager.selection.count) seleccionados")
         .toolbar {
+            ToolbarItem {
+                Button("Importar solo lo nuevo") { manager.importarNuevas() }
+                    .disabled(manager.isImporting)
+                    .help("Selecciona lo que aún no se ha importado y lo importa de una vez")
+            }
             ToolbarItem {
                 Button("Seleccionar nuevas") { manager.selectAllNew() }
             }
@@ -98,6 +107,20 @@ struct ContentView: View {
     }
 
     // MARK: Barra de importación
+    private var resumenSeleccion: String {
+        var texto = "Por copiar: \(DeviceManager.formatoBytes(manager.bytesSeleccionados))"
+        if let libre = manager.espacioLibre() {
+            texto += " · Libre en el destino: \(DeviceManager.formatoBytes(libre))"
+            if sinEspacio { texto += " · ESPACIO INSUFICIENTE" }
+        }
+        return texto
+    }
+
+    private var sinEspacio: Bool {
+        guard let libre = manager.espacioLibre() else { return false }
+        return manager.bytesSeleccionados > libre
+    }
+
     private var importBar: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -109,12 +132,21 @@ struct ContentView: View {
                 }.frame(width: 250)
                 Toggle("Borrar del celular tras verificar", isOn: $manager.deleteAfterImport)
                 Spacer()
-                if manager.isImporting {
-                    ProgressView(value: manager.importProgress).frame(width: 140)
-                }
                 Button("Importar \(manager.selection.count)") { manager.importSelected() }
                     .buttonStyle(.borderedProminent)
                     .disabled(manager.selection.isEmpty || manager.isImporting)
+            }
+            HStack(spacing: 12) {
+                Text(resumenSeleccion)
+                    .font(.caption)
+                    .foregroundStyle(sinEspacio ? Color.red : Color.secondary)
+                Spacer()
+                if manager.isImporting {
+                    Text(manager.importStatus).font(.caption).foregroundStyle(.secondary)
+                    ProgressView(value: manager.importProgress).frame(width: 120)
+                    Button(manager.isCancelling ? "Cancelando…" : "Cancelar") { manager.cancelarImportacion() }
+                        .disabled(manager.isCancelling)
+                }
             }
             if !manager.importLog.isEmpty {
                 ScrollView { Text(manager.importLog).font(.caption.monospaced()).frame(maxWidth: .infinity, alignment: .leading) }
@@ -168,6 +200,8 @@ struct PreviewSheet: View {
     @EnvironmentObject var manager: DeviceManager
     @Environment(\.dismiss) private var dismiss
     @State private var image: NSImage?
+    @State private var player: AVPlayer?
+    @State private var videoURL: URL?
     @State private var loading = true
 
     var body: some View {
@@ -178,17 +212,29 @@ struct PreviewSheet: View {
                 Button("Cerrar") { dismiss() }.keyboardShortcut(.cancelAction)
             }
             ZStack {
-                if let image { Image(nsImage: image).resizable().scaledToFit() }
-                else if loading { ProgressView("Descargando…") }
-                else { Text(item.isVideo ? "Vista previa de video no disponible" : "No se pudo cargar").foregroundStyle(.secondary) }
+                if let player { VideoPlayer(player: player) }
+                else if let image { Image(nsImage: image).resizable().scaledToFit() }
+                else if loading { ProgressView(item.isVideo ? "Descargando video…" : "Descargando…") }
+                else { Text("No se pudo cargar").foregroundStyle(.secondary) }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .padding()
         .frame(width: 800, height: 600)
         .task {
-            if !item.isVideo { image = await manager.loadFullImage(item) }
+            if item.isVideo {
+                if let url = await manager.loadVideo(item) {
+                    videoURL = url
+                    player = AVPlayer(url: url)
+                }
+            } else {
+                image = await manager.loadFullImage(item)
+            }
             loading = false
+        }
+        .onDisappear {
+            player?.pause()
+            if let videoURL { try? FileManager.default.removeItem(at: videoURL) }
         }
     }
 }

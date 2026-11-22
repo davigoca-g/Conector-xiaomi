@@ -21,7 +21,14 @@ struct ConectorXiaomiApp: App {
             ContentView()
                 .environmentObject(manager)
                 .frame(minWidth: 900, minHeight: 600)
-                .onAppear { manager.start() }
+                .onAppear {
+                    if let escena = Captura.escena {
+                        manager.cargarEscena(escena)
+                        Captura.programar()
+                    } else {
+                        manager.start()
+                    }
+                }
         }
     }
 }

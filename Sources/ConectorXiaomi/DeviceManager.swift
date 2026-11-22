@@ -22,6 +22,8 @@ final class DeviceManager: NSObject, ObservableObject {
     // MARK: Estado publicado
     @Published var devices: [ICCameraDevice] = []
     @Published var selectedDevice: ICCameraDevice?
+    /// Nombre de un celular ficticio; solo se usa en las escenas de demostración de las capturas del manual.
+    @Published var demoDeviceName: String?
     @Published var photos: [PhotoItem] = []
     @Published var state: DeviceState = .idle
     @Published var selection: Set<String> = []
@@ -34,10 +36,16 @@ final class DeviceManager: NSObject, ObservableObject {
     @Published var isImporting = false
     @Published var importProgress: Double = 0
     @Published var importLog: String = ""
+    /// Texto de avance durante la importación (archivos, bytes y tiempo restante estimado).
+    @Published var importStatus: String = ""
+    @Published var isCancelling = false
 
     private let browser = ICDeviceBrowser()
     private let index = ImportedIndex()
     private var photosByObject: [ObjectIdentifier: PhotoItem] = [:]
+    /// Claves que las escenas de demostración marcan como ya importadas.
+    var demoImported: Set<String> = []
+    private var cancelRequested = false
 
     // MARK: Ciclo de vida
     func start() {
@@ -59,16 +67,55 @@ final class DeviceManager: NSObject, ObservableObject {
         device.requestOpenSession()
     }
 
-    func isAlreadyImported(_ item: PhotoItem) -> Bool { index.contains(item.key) }
+    func isAlreadyImported(_ item: PhotoItem) -> Bool { index.contains(item.key) || demoImported.contains(item.key) }
 
     func requestThumbnail(for item: PhotoItem) {
         guard !item.thumbnailRequested else { return }
         item.thumbnailRequested = true
-        item.file.requestThumbnail()
+        item.file?.requestThumbnail()
     }
 
     func selectAllNew() {
         selection = Set(photos.filter { !isAlreadyImported($0) }.map(\.key))
+    }
+
+    /// Selecciona todo lo que aún no se importó y lo importa en un solo paso.
+    func importarNuevas() {
+        guard !isImporting else { return }
+        selectAllNew()
+        if selection.isEmpty {
+            importLog = "No hay fotos nuevas para importar.\n"
+            return
+        }
+        importSelected()
+    }
+
+    /// Pide detener la importación. El archivo en curso termina de copiarse y los siguientes quedan sin importar.
+    func cancelarImportacion() {
+        guard isImporting else { return }
+        cancelRequested = true
+        isCancelling = true
+    }
+
+    /// Bytes que faltan por copiar de la selección actual (sin contar lo ya importado).
+    var bytesSeleccionados: Int64 {
+        photos.reduce(Int64(0)) { total, item in
+            selection.contains(item.key) && !isAlreadyImported(item) ? total + item.size : total
+        }
+    }
+
+    /// Espacio libre en el disco del destino. Si la carpeta aún no existe, mide el primer directorio existente hacia arriba.
+    func espacioLibre() -> Int64? {
+        var url = destination
+        while !FileManager.default.fileExists(atPath: url.path), url.pathComponents.count > 1 {
+            url = url.deletingLastPathComponent()
+        }
+        let valores = try? url.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
+        return valores?.volumeAvailableCapacityForImportantUsage
+    }
+
+    static func formatoBytes(_ bytes: Int64) -> String {
+        ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
 
     func chooseDestination() {
@@ -83,14 +130,29 @@ final class DeviceManager: NSObject, ObservableObject {
     // MARK: Previsualización
     /// Descarga la foto a una carpeta temporal y devuelve la imagen completa.
     func loadFullImage(_ item: PhotoItem) async -> NSImage? {
+        guard let file = item.file else { return nil }
         let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("ConectorXiaomiPreview", isDirectory: true)
         try? FileManager.default.createDirectory(at: tmp, withIntermediateDirectories: true)
         do {
             let name = "\(UUID().uuidString)_\(item.name)"
-            _ = try await download(item.file, to: tmp, as: name)
+            _ = try await download(file, to: tmp, as: name)
             let url = tmp.appendingPathComponent(name)
             defer { try? FileManager.default.removeItem(at: url) }
             return NSImage(contentsOf: url)
+        } catch {
+            return nil
+        }
+    }
+
+    /// Descarga el video a una carpeta temporal y devuelve su URL. Quien la pide debe borrar el archivo al terminar.
+    func loadVideo(_ item: PhotoItem) async -> URL? {
+        guard let file = item.file else { return nil }
+        let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("ConectorXiaomiPreview", isDirectory: true)
+        try? FileManager.default.createDirectory(at: tmp, withIntermediateDirectories: true)
+        let name = "\(UUID().uuidString)_\(item.name)"
+        do {
+            _ = try await download(file, to: tmp, as: name)
+            return tmp.appendingPathComponent(name)
         } catch {
             return nil
         }
@@ -100,18 +162,36 @@ final class DeviceManager: NSObject, ObservableObject {
     func importSelected() {
         let items = photos.filter { selection.contains($0.key) }
         guard !items.isEmpty, !isImporting else { return }
-        isImporting = true
-        importProgress = 0
+        let pendientes = items.filter { !index.contains($0.key) }
+        let totalBytes = pendientes.reduce(Int64(0)) { $0 + $1.size }
         importLog = ""
+
+        // Antes de copiar se comprueba que el disco de destino tenga espacio para todo.
+        if let libre = espacioLibre(), totalBytes > libre {
+            importLog = "Espacio insuficiente en el destino: se necesitan \(Self.formatoBytes(totalBytes)) y hay "
+                + "\(Self.formatoBytes(libre)) libres. Libera espacio o elige otra carpeta.\n"
+            return
+        }
+
+        isImporting = true
+        cancelRequested = false
+        isCancelling = false
+        importProgress = 0
+        importStatus = ""
         let dest = destination, layout = layout, deleteAfter = deleteAfterImport
 
         Task {
             var imported = 0, skipped = 0, failed = 0
+            var cancelled = false
             var verified: [PhotoItem] = []
+            var copiedBytes: Int64 = 0
+            let start = Date()
             let fm = FileManager.default
 
             for (i, item) in items.enumerated() {
-                defer { Task { @MainActor in self.importProgress = Double(i + 1) / Double(items.count) } }
+                if await MainActor.run(body: { self.cancelRequested }) { cancelled = true; break }
+                await self.actualizarAvance(hechos: i, total: items.count, bytes: copiedBytes,
+                                            bytesTotales: totalBytes, desde: start)
 
                 if index.contains(item.key) { skipped += 1; verified.append(item); continue }
 
@@ -126,39 +206,76 @@ final class DeviceManager: NSObject, ObservableObject {
                         index.insert(item.key); skipped += 1; verified.append(item); continue
                     }
 
+                    guard let file = item.file else { continue }
                     let finalName = Self.uniqueName(item.name, in: folder)
-                    _ = try await download(item.file, to: folder, as: finalName)
-
                     let out = folder.appendingPathComponent(finalName)
-                    let size = (try fm.attributesOfItem(atPath: out.path)[.size] as? NSNumber)?.int64Value ?? -1
-                    guard size == item.size else {
-                        try? fm.removeItem(at: out)
-                        throw NSError(domain: "Conector", code: 1,
-                                      userInfo: [NSLocalizedDescriptionKey: "Tamaño distinto tras copiar"])
+
+                    // Se copia con extensión .parte y solo se renombra cuando el tamaño coincide, de modo que
+                    // un corte del cable nunca deja un archivo incompleto con el nombre definitivo.
+                    let parcial = folder.appendingPathComponent(finalName + ".parte")
+                    try? fm.removeItem(at: parcial)
+                    do {
+                        _ = try await download(file, to: folder, as: parcial.lastPathComponent)
+                        let size = (try fm.attributesOfItem(atPath: parcial.path)[.size] as? NSNumber)?.int64Value ?? -1
+                        guard size == item.size else {
+                            throw NSError(domain: "Conector", code: 1,
+                                          userInfo: [NSLocalizedDescriptionKey: "Tamaño distinto tras copiar"])
+                        }
+                        try fm.moveItem(at: parcial, to: out)
+                    } catch {
+                        try? fm.removeItem(at: parcial)
+                        throw error
                     }
+
                     // Conserva la fecha original de la foto.
                     try? fm.setAttributes([.creationDate: item.date, .modificationDate: item.date], ofItemAtPath: out.path)
                     index.insert(item.key)
                     imported += 1
+                    copiedBytes += item.size
                     verified.append(item)
                 } catch {
                     failed += 1
+                    copiedBytes += item.size
                     await MainActor.run { self.importLog += "✗ \(item.name): \(error.localizedDescription)\n" }
                 }
             }
 
-            // Solo se borra del celular lo verificado en el Mac.
-            if deleteAfter, !verified.isEmpty, let device = await MainActor.run(body: { self.selectedDevice }) {
-                device.requestDeleteFiles(verified.map { $0.file })
+            // Solo se borra del celular lo verificado en el Mac, y nunca si la importación se canceló.
+            let borrar = deleteAfter && !cancelled && !verified.isEmpty
+            if borrar, let device = await MainActor.run(body: { self.selectedDevice }) {
+                device.requestDeleteFiles(verified.compactMap(\.file))
             }
 
             await MainActor.run {
-                self.importLog = "Importadas: \(imported) · Duplicadas omitidas: \(skipped) · Fallidas: \(failed)\n" + self.importLog
+                // Lo que quedó sin importar (cancelado o fallido) sigue seleccionado para reanudar.
+                let restantes = items.filter { !self.index.contains($0.key) }
+                if cancelled {
+                    self.importLog = "Importación cancelada. Importadas: \(imported) · Duplicadas omitidas: \(skipped) · "
+                        + "Fallidas: \(failed). Quedan \(restantes.count) sin importar: pulsa Importar para reanudar. "
+                        + "No se borró nada del celular.\n" + self.importLog
+                } else {
+                    self.importLog = "Importadas: \(imported) · Duplicadas omitidas: \(skipped) · Fallidas: \(failed)\n"
+                        + self.importLog
+                }
+                self.selection = Set(restantes.map(\.key))
+                self.importStatus = ""
                 self.isImporting = false
-                self.selection = []
+                self.isCancelling = false
                 self.objectWillChange.send()
             }
         }
+    }
+
+    @MainActor
+    private func actualizarAvance(hechos: Int, total: Int, bytes: Int64, bytesTotales: Int64, desde inicio: Date) {
+        importProgress = bytesTotales > 0 ? Double(bytes) / Double(bytesTotales) : Double(hechos) / Double(max(total, 1))
+        var texto = "\(hechos) de \(total) · \(Self.formatoBytes(bytes)) de \(Self.formatoBytes(bytesTotales))"
+        let segundos = Date().timeIntervalSince(inicio)
+        if bytes > 0, segundos > 3, bytesTotales > bytes {
+            let restante = Double(bytesTotales - bytes) / (Double(bytes) / segundos)
+            texto += restante < 60 ? " · queda menos de 1 min" : " · quedan ~\(Int((restante / 60).rounded(.up))) min"
+        }
+        importStatus = texto
     }
 
     // MARK: Utilidades
@@ -249,7 +366,7 @@ extension DeviceManager: ICCameraDeviceDelegate {
         let newItems = items.compactMap { ($0 as? ICCameraFile).flatMap(PhotoItem.init(file:)) }
         DispatchQueue.main.async {
             for item in newItems {
-                self.photosByObject[ObjectIdentifier(item.file)] = item
+                if let file = item.file { self.photosByObject[ObjectIdentifier(file)] = item }
                 self.photos.append(item)
             }
         }
@@ -258,7 +375,7 @@ extension DeviceManager: ICCameraDeviceDelegate {
     func cameraDevice(_ camera: ICCameraDevice, didRemove items: [ICCameraItem]) {
         DispatchQueue.main.async {
             let ids = Set(items.map { ObjectIdentifier($0) })
-            self.photos.removeAll { ids.contains(ObjectIdentifier($0.file)) }
+            self.photos.removeAll { photo in photo.file.map { ids.contains(ObjectIdentifier($0)) } ?? false }
             self.selection = self.selection.intersection(Set(self.photos.map(\.key)))
         }
     }
@@ -272,7 +389,8 @@ extension DeviceManager: ICCameraDeviceDelegate {
         }
     }
 
-    func cameraDevice(_ camera: ICCameraDevice, didReceiveMetadataFor item: ICCameraItem) {}
+    func cameraDevice(_ camera: ICCameraDevice, didReceiveMetadata metadata: [AnyHashable: Any]?,
+                      for item: ICCameraItem, error: Error?) {}
     func cameraDevice(_ camera: ICCameraDevice, didRenameItems items: [ICCameraItem]) {}
     func cameraDeviceDidChangeCapability(_ camera: ICCameraDevice) {}
     func cameraDevice(_ camera: ICCameraDevice, didReceivePTPEvent eventData: Data) {}
