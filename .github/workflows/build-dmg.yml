@@ -1,0 +1,24 @@
+# Compila la app en un Mac de GitHub y publica el instalador .dmg como artefacto descargable.
+# Se ejecuta en cada push y también a mano desde la pestaña Actions (workflow_dispatch).
+name: Construir instalador macOS
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  dmg:
+    runs-on: macos-14
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Compilar y generar el .dmg
+        run: ./scripts/build_dmg.sh
+
+      - name: Subir el instalador
+        uses: actions/upload-artifact@v4
+        with:
+          name: ConectorXiaomi-dmg
+          path: build/ConectorXiaomi.dmg
+          if-no-files-found: error

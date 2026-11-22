@@ -21,4 +21,14 @@ el celular debe estar en modo **«Transferir fotos (PTP)»**:
 ```bash
 swift run                  # desarrollo
 ./scripts/build_app.sh     # genera build/ConectorXiaomi.app
+./scripts/build_dmg.sh     # genera el instalador build/ConectorXiaomi.dmg
 ```
+
+## Instalador (.dmg)
+Si no tienes un Mac a mano, el flujo de GitHub Actions `Construir instalador macOS`
+(`.github/workflows/build-dmg.yml`) compila la app en un Mac de GitHub y deja el `.dmg`
+como artefacto descargable en la pestaña Actions de cada ejecución.
+
+La app se firma de forma ad hoc, sin certificado de desarrollador. La primera vez que la abras,
+macOS puede bloquearla: haz clic derecho sobre la app ▸ Abrir ▸ Abrir, o permítela en
+Ajustes del Sistema ▸ Privacidad y seguridad.
