@@ -43,7 +43,7 @@ App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular 
   falla. Causas probables aún sin confirmar: lectura perezosa de `NSImage(contentsOf:)` o descarga en cola detrás de las miniaturas.
 - Manual de usuario en `docs/manual-de-usuario.html`, con imágenes en `docs/img/`, actualizado con las funciones nuevas.
 - Pre-lanzamientos en GitHub Releases con el `.dmg` adjunto: `v1.0.0-prueba` (sin las funciones nuevas), `v1.1.0-prueba` y
-  `v1.2.0-prueba`, `v1.2.1-prueba` y `v1.2.2-prueba` (la más reciente, la que debe usarse; incluye la lista, la selección por
+  `v1.2.0-prueba` y `v1.2.1-prueba`, y la versión estable `v1.2.2` (la más reciente, la que debe usarse; incluye la lista, la selección por
   lotes, la corrección de la vista previa, el ancho mínimo de 1150 px y la corrección del cierre inesperado). El Pull Request #1 ya está fusionado en `main` (la rama `ccr-a8701da9-ja6pdv` se conservó, pero
   el trabajo continúa en `main`).
 - El manual y las capturas de `docs/img/` se regeneraron con la versión 1.2.1. El ancho mínimo de la ventana (`App.swift`)
@@ -58,8 +58,7 @@ que ocurría en la 1.2.1 al iniciar una importación masiva quedó resuelto: la 
 cada foto. No se llegó a revisar el informe del fallo de macOS; la corrección se dio por buena porque el problema no volvió.
 
 ## Pendiente / riesgos
-1. La 1.2.2 se promovió a versión estable (release `v1.2.2`, con el mismo `.dmg` de `v1.2.2-prueba`, que sigue publicado
-   como pre-lanzamiento). Las notas avisan de lo que aún no se ha comprobado (puntos siguientes).
+1. La 1.2.2 se promovió a versión estable (release `v1.2.2`, con el mismo `.dmg` que tuvo `v1.2.2-prueba`, ya borrado). Las notas avisan de lo que aún no se ha comprobado (puntos siguientes).
 2. Sin reporte explícito: verificar la fecha conservada, las carpetas y la detección de duplicados en lo ya importado.
 3. Probar el borrado en el celular con una sola foto (puede no estar permitido por PTP).
    Probar también cancelar a mitad de una importación y reanudar, y desconectar el cable a propósito para ver que no queda
