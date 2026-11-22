@@ -22,3 +22,15 @@ jobs:
           name: ConectorXiaomi-dmg
           path: build/ConectorXiaomi.dmg
           if-no-files-found: error
+
+      # Las capturas no bloquean el instalador: si fallan, el .dmg ya quedó publicado.
+      - name: Generar capturas de pantalla para el manual
+        continue-on-error: true
+        run: ./scripts/generar_capturas.sh
+
+      - name: Subir las capturas
+        uses: actions/upload-artifact@v4
+        with:
+          name: ConectorXiaomi-capturas
+          path: build/capturas/*.png
+          if-no-files-found: warn

@@ -22,6 +22,8 @@ final class DeviceManager: NSObject, ObservableObject {
     // MARK: Estado publicado
     @Published var devices: [ICCameraDevice] = []
     @Published var selectedDevice: ICCameraDevice?
+    /// Nombre de un celular ficticio; solo se usa en las escenas de demostración de las capturas del manual.
+    @Published var demoDeviceName: String?
     @Published var photos: [PhotoItem] = []
     @Published var state: DeviceState = .idle
     @Published var selection: Set<String> = []
@@ -38,6 +40,8 @@ final class DeviceManager: NSObject, ObservableObject {
     private let browser = ICDeviceBrowser()
     private let index = ImportedIndex()
     private var photosByObject: [ObjectIdentifier: PhotoItem] = [:]
+    /// Claves que las escenas de demostración marcan como ya importadas.
+    var demoImported: Set<String> = []
 
     // MARK: Ciclo de vida
     func start() {
@@ -59,12 +63,12 @@ final class DeviceManager: NSObject, ObservableObject {
         device.requestOpenSession()
     }
 
-    func isAlreadyImported(_ item: PhotoItem) -> Bool { index.contains(item.key) }
+    func isAlreadyImported(_ item: PhotoItem) -> Bool { index.contains(item.key) || demoImported.contains(item.key) }
 
     func requestThumbnail(for item: PhotoItem) {
         guard !item.thumbnailRequested else { return }
         item.thumbnailRequested = true
-        item.file.requestThumbnail()
+        item.file?.requestThumbnail()
     }
 
     func selectAllNew() {
@@ -83,11 +87,12 @@ final class DeviceManager: NSObject, ObservableObject {
     // MARK: Previsualización
     /// Descarga la foto a una carpeta temporal y devuelve la imagen completa.
     func loadFullImage(_ item: PhotoItem) async -> NSImage? {
+        guard let file = item.file else { return nil }
         let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("ConectorXiaomiPreview", isDirectory: true)
         try? FileManager.default.createDirectory(at: tmp, withIntermediateDirectories: true)
         do {
             let name = "\(UUID().uuidString)_\(item.name)"
-            _ = try await download(item.file, to: tmp, as: name)
+            _ = try await download(file, to: tmp, as: name)
             let url = tmp.appendingPathComponent(name)
             defer { try? FileManager.default.removeItem(at: url) }
             return NSImage(contentsOf: url)
@@ -126,8 +131,9 @@ final class DeviceManager: NSObject, ObservableObject {
                         index.insert(item.key); skipped += 1; verified.append(item); continue
                     }
 
+                    guard let file = item.file else { continue }
                     let finalName = Self.uniqueName(item.name, in: folder)
-                    _ = try await download(item.file, to: folder, as: finalName)
+                    _ = try await download(file, to: folder, as: finalName)
 
                     let out = folder.appendingPathComponent(finalName)
                     let size = (try fm.attributesOfItem(atPath: out.path)[.size] as? NSNumber)?.int64Value ?? -1
@@ -149,7 +155,7 @@ final class DeviceManager: NSObject, ObservableObject {
 
             // Solo se borra del celular lo verificado en el Mac.
             if deleteAfter, !verified.isEmpty, let device = await MainActor.run(body: { self.selectedDevice }) {
-                device.requestDeleteFiles(verified.map { $0.file })
+                device.requestDeleteFiles(verified.compactMap(\.file))
             }
 
             await MainActor.run {
@@ -249,7 +255,7 @@ extension DeviceManager: ICCameraDeviceDelegate {
         let newItems = items.compactMap { ($0 as? ICCameraFile).flatMap(PhotoItem.init(file:)) }
         DispatchQueue.main.async {
             for item in newItems {
-                self.photosByObject[ObjectIdentifier(item.file)] = item
+                if let file = item.file { self.photosByObject[ObjectIdentifier(file)] = item }
                 self.photos.append(item)
             }
         }
@@ -258,7 +264,7 @@ extension DeviceManager: ICCameraDeviceDelegate {
     func cameraDevice(_ camera: ICCameraDevice, didRemove items: [ICCameraItem]) {
         DispatchQueue.main.async {
             let ids = Set(items.map { ObjectIdentifier($0) })
-            self.photos.removeAll { ids.contains(ObjectIdentifier($0.file)) }
+            self.photos.removeAll { photo in photo.file.map { ids.contains(ObjectIdentifier($0)) } ?? false }
             self.selection = self.selection.intersection(Set(self.photos.map(\.key)))
         }
     }

@@ -26,11 +26,14 @@ struct ContentView: View {
                     Label(device.name ?? "Dispositivo", systemImage: "iphone")
                         .tag(ObjectIdentifier(device))
                 }
+                if let nombre = manager.demoDeviceName {
+                    Label(nombre, systemImage: "iphone")
+                }
             }
         }
         .navigationSplitViewColumnWidth(min: 200, ideal: 220)
         .overlay {
-            if manager.devices.isEmpty {
+            if manager.devices.isEmpty && manager.demoDeviceName == nil {
                 ContentUnavailableView("Sin dispositivos", systemImage: "cable.connector",
                                        description: Text("Conecta el Xiaomi por USB."))
                     .padding()
@@ -80,7 +83,7 @@ struct ContentView: View {
             Divider()
             importBar
         }
-        .navigationTitle(manager.selectedDevice?.name ?? "Galería")
+        .navigationTitle(manager.selectedDevice?.name ?? manager.demoDeviceName ?? "Galería")
         .navigationSubtitle("\(manager.photos.count) elementos · \(manager.selection.count) seleccionados")
         .toolbar {
             ToolbarItem {
