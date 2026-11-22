@@ -1,6 +1,6 @@
 # Estado del proyecto (para continuar en el Mac)
 
-Última actualización: 2026-11-22 (versión 1.2.0-prueba)
+Última actualización: 2026-11-22 (versión 1.2.1-prueba)
 
 ## Objetivo
 App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular e importarlas al Mac.
@@ -43,11 +43,12 @@ App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular 
   falla. Causas probables aún sin confirmar: lectura perezosa de `NSImage(contentsOf:)` o descarga en cola detrás de las miniaturas.
 - Manual de usuario en `docs/manual-de-usuario.html`, con imágenes en `docs/img/`, actualizado con las funciones nuevas.
 - Pre-lanzamientos en GitHub Releases con el `.dmg` adjunto: `v1.0.0-prueba` (sin las funciones nuevas), `v1.1.0-prueba` y
-  `v1.2.0-prueba` (la más reciente, la que debe usarse; incluye la lista, la selección por lotes y la corrección de la vista
-  previa, commit `dd970cd`). El Pull Request #1 ya está fusionado en `main` (la rama `ccr-a8701da9-ja6pdv` se conservó, pero
+  `v1.2.0-prueba` y `v1.2.1-prueba` (la más reciente, la que debe usarse; incluye la lista, la selección por lotes, la
+  corrección de la vista previa y el ancho mínimo de 1150 px). El Pull Request #1 ya está fusionado en `main` (la rama `ccr-a8701da9-ja6pdv` se conservó, pero
   el trabajo continúa en `main`).
-- El manual y las capturas de `docs/img/` se regeneraron con la versión 1.2.0. Con la ventana al ancho mínimo (900 px) los
-  botones de la barra superior se pliegan bajo «>>»; el manual lo explica. Posible mejora: subir el ancho mínimo en `App.swift`.
+- El manual y las capturas de `docs/img/` se regeneraron con la versión 1.2.1. El ancho mínimo de la ventana (`App.swift`)
+  subió de 900 a 1150 px para que toda la barra superior (incluido «Seleccionar por lote» y el selector de vista) se vea
+  sin plegarse bajo «>>».
 
 ## Pendiente / riesgos
 0. Probar con el celular real la **vista de lista**, la **selección por lotes** (por año y por rango) y la **vista previa**
