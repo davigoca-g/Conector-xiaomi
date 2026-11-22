@@ -13,6 +13,10 @@ el celular debe estar en modo **«Transferir fotos (PTP)»**:
 ## Funciones
 - Detección automática del celular y lectura de DCIM (fotos y videos).
 - Miniaturas, selección múltiple y vista previa de fotos y videos (doble clic).
+- Vista de lista sin miniaturas por defecto, pensada para bibliotecas enormes; las miniaturas se activan desde el selector
+  de vista. La vista previa en modo lista avisa que puede demorar y solo descarga al confirmar.
+- Selección por lotes desde el menú «Seleccionar por lote»: todo, último mes, últimos 3 meses, último semestre, último año,
+  un año concreto o un rango de fechas. Sirve para importar bibliotecas muy grandes por tandas.
 - Botón «Importar solo lo nuevo» para importar en un paso lo que aún no se ha copiado.
 - Importación a carpeta elegida, organizada por Año/Mes, Año/Mes/Día o plana.
 - Detección de duplicados (índice persistente + comparación en destino).

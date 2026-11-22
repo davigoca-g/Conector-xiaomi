@@ -27,6 +27,12 @@ final class DeviceManager: NSObject, ObservableObject {
     @Published var photos: [PhotoItem] = []
     @Published var state: DeviceState = .idle
     @Published var selection: Set<String> = []
+    /// Años con fotos en el celular, del más reciente al más antiguo; alimenta el menú de selección por lotes.
+    @Published var aniosDisponibles: [Int] = []
+    /// Vista de lista sin miniaturas (por defecto). Con miles de fotos evita pedirle al celular una miniatura por cada una.
+    @Published var modoLista = true
+    /// En la selección por lotes, no marca lo que ya se importó antes.
+    @Published var omitirImportadas = true
 
     // Importación
     @Published var destination: URL = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask)[0]
@@ -62,6 +68,7 @@ final class DeviceManager: NSObject, ObservableObject {
         photos = []
         photosByObject = [:]
         selection = []
+        aniosDisponibles = []
         state = .opening
         device.delegate = self
         device.requestOpenSession()
@@ -77,6 +84,43 @@ final class DeviceManager: NSObject, ObservableObject {
 
     func selectAllNew() {
         selection = Set(photos.filter { !isAlreadyImported($0) }.map(\.key))
+    }
+
+    // MARK: Selección por lotes
+    /// Reemplaza la selección por las fotos cuya fecha cae en el rango. Un extremo nulo deja ese lado abierto.
+    /// Si `omitirImportadas` está activo, las que ya se importaron antes no se marcan.
+    func seleccionar(desde: Date?, hasta: Date?) {
+        selection = Set(photos.lazy.filter { item in
+            if let desde, item.date < desde { return false }
+            if let hasta, item.date >= hasta { return false }
+            return !(self.omitirImportadas && self.isAlreadyImported(item))
+        }.map(\.key))
+    }
+
+    func seleccionarTodo() { seleccionar(desde: nil, hasta: nil) }
+
+    /// Selecciona lo tomado en los últimos `valor` días, meses o años, contando desde ahora.
+    func seleccionarUltimos(_ unidad: Calendar.Component, _ valor: Int) {
+        seleccionar(desde: Calendar.current.date(byAdding: unidad, value: -valor, to: Date()), hasta: nil)
+    }
+
+    func seleccionarAnio(_ anio: Int) {
+        let cal = Calendar.current
+        guard let inicio = cal.date(from: DateComponents(year: anio)),
+              let fin = cal.date(from: DateComponents(year: anio + 1)) else { return }
+        seleccionar(desde: inicio, hasta: fin)
+    }
+
+    /// Selecciona un rango de días completos: desde el inicio del primero hasta el final del último, ambos inclusive.
+    func seleccionarRango(_ primero: Date, _ ultimo: Date) {
+        let cal = Calendar.current
+        let fin = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: max(primero, ultimo)))
+        seleccionar(desde: cal.startOfDay(for: min(primero, ultimo)), hasta: fin)
+    }
+
+    private func recalcularAnios() {
+        let cal = Calendar.current
+        aniosDisponibles = Set(photos.map { cal.component(.year, from: $0.date) }).sorted(by: >)
     }
 
     /// Selecciona todo lo que aún no se importó y lo importa en un solo paso.
@@ -128,7 +172,9 @@ final class DeviceManager: NSObject, ObservableObject {
     }
 
     // MARK: Previsualización
-    /// Descarga la foto a una carpeta temporal y devuelve la imagen completa.
+    /// Descarga la foto a una carpeta temporal y devuelve la imagen lista para mostrar.
+    /// La decodificación se hace antes de borrar el archivo temporal (`NSImage(contentsOf:)` es perezoso y dejaba la
+    /// vista en blanco al desaparecer el archivo) y se reduce a 2400 px para no cargar en memoria fotos de 200 MP enteras.
     func loadFullImage(_ item: PhotoItem) async -> NSImage? {
         guard let file = item.file else { return nil }
         let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("ConectorXiaomiPreview", isDirectory: true)
@@ -138,7 +184,14 @@ final class DeviceManager: NSObject, ObservableObject {
             _ = try await download(file, to: tmp, as: name)
             let url = tmp.appendingPathComponent(name)
             defer { try? FileManager.default.removeItem(at: url) }
-            return NSImage(contentsOf: url)
+            let opciones: [CFString: Any] = [
+                kCGImageSourceCreateThumbnailFromImageAlways: true,
+                kCGImageSourceCreateThumbnailWithTransform: true,
+                kCGImageSourceThumbnailMaxPixelSize: 2400
+            ]
+            guard let origen = CGImageSourceCreateWithURL(url as CFURL, nil),
+                  let cg = CGImageSourceCreateThumbnailAtIndex(origen, 0, opciones as CFDictionary) else { return nil }
+            return NSImage(cgImage: cg, size: .zero)
         } catch {
             return nil
         }
@@ -359,6 +412,7 @@ extension DeviceManager: ICCameraDeviceDelegate {
         DispatchQueue.main.async {
             self.state = .ready
             self.photos.sort { $0.date > $1.date }
+            self.recalcularAnios()
         }
     }
 
@@ -377,6 +431,7 @@ extension DeviceManager: ICCameraDeviceDelegate {
             let ids = Set(items.map { ObjectIdentifier($0) })
             self.photos.removeAll { photo in photo.file.map { ids.contains(ObjectIdentifier($0)) } ?? false }
             self.selection = self.selection.intersection(Set(self.photos.map(\.key)))
+            self.recalcularAnios()
         }
     }
 

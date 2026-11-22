@@ -32,6 +32,15 @@ App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular 
   - Copia segura con archivos `.parte`, cancelar entre archivos y reanudar; lo pendiente o fallido queda seleccionado y al
     cancelar no se borra nada del celular.
   - Barra con tamaño por copiar, espacio libre en el destino, rechazo si no cabe y tiempo restante estimado.
+- Selección por lotes (menú «Seleccionar por lote» de la barra superior): todo, último mes, últimos 3 meses, último semestre,
+  último año, cada año que tenga fotos y un rango de fechas libre. Por defecto omite lo ya importado (se puede desactivar).
+  Pensado para pasar unas 24.000 fotos en tandas. **Sin probar con el celular.**
+- Vista de lista sin miniaturas como modo por defecto (selector «Lista / Miniaturas» en la barra superior): no se pide ninguna
+  miniatura al celular, y la vista previa, desde el ojo o con doble clic, avisa que puede demorar y solo descarga al confirmar.
+  En modo miniaturas la vista previa carga de inmediato como antes. **Sin probar con el celular.**
+- Corrección de la vista previa (la primera prueba real nunca cargaba): la imagen se decodifica antes de borrar el archivo
+  temporal, se reduce a 2400 px, y la ventana muestra la miniatura mientras baja el archivo completo, con un mensaje claro si
+  falla. Causas probables aún sin confirmar: lectura perezosa de `NSImage(contentsOf:)` o descarga en cola detrás de las miniaturas.
 - Manual de usuario en `docs/manual-de-usuario.html`, con imágenes en `docs/img/`, actualizado con las funciones nuevas.
 - Pre-lanzamientos en GitHub Releases con el `.dmg` adjunto: `v1.0.0-prueba` (sin las funciones nuevas) y `v1.1.0-prueba`
   (la más reciente, la que debe usarse). El Pull Request #1 ya está fusionado en `main` (la rama `ccr-a8701da9-ja6pdv`
