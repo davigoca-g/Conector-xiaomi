@@ -1,6 +1,6 @@
 # Estado del proyecto (para continuar en el Mac)
 
-Última actualización: 2026-11-22 (versión 1.2.2-prueba, probada)
+Última actualización: 2026-11-22 (versión 1.2.2, estable)
 
 ## Objetivo
 App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular e importarlas al Mac.
@@ -58,7 +58,8 @@ que ocurría en la 1.2.1 al iniciar una importación masiva quedó resuelto: la 
 cada foto. No se llegó a revisar el informe del fallo de macOS; la corrección se dio por buena porque el problema no volvió.
 
 ## Pendiente / riesgos
-1. La 1.2.2 sigue publicada como pre-lanzamiento. Falta decidir si se promueve a versión estable.
+1. La 1.2.2 se promovió a versión estable (release `v1.2.2`, con el mismo `.dmg` de `v1.2.2-prueba`, que sigue publicado
+   como pre-lanzamiento). Las notas avisan de lo que aún no se ha comprobado (puntos siguientes).
 2. Sin reporte explícito: verificar la fecha conservada, las carpetas y la detección de duplicados en lo ya importado.
 3. Probar el borrado en el celular con una sola foto (puede no estar permitido por PTP).
    Probar también cancelar a mitad de una importación y reanudar, y desconectar el cable a propósito para ver que no queda
