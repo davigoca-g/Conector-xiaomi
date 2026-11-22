@@ -20,7 +20,7 @@ struct ConectorXiaomiApp: App {
         WindowGroup("Conector Xiaomi") {
             ContentView()
                 .environmentObject(manager)
-                .frame(minWidth: 900, minHeight: 600)
+                .frame(minWidth: 1150, minHeight: 600)
                 .onAppear {
                     if let escena = Captura.escena {
                         manager.cargarEscena(escena)
