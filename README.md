@@ -49,3 +49,7 @@ Para evitar el bloqueo por completo habría que firmar con un Apple Developer ID
 El manual completo, con la instalación, la conexión del celular en modo PTP, la importación paso a paso y la
 solución de problemas, está en [`docs/manual-de-usuario.html`](docs/manual-de-usuario.html). Ábrelo con
 cualquier navegador.
+
+Las imágenes del manual (`docs/img/`) las genera la propia app compilada en GitHub Actions con datos ficticios,
+mediante `scripts/generar_capturas.sh`. Para regenerarlas, descarga el artefacto `ConectorXiaomi-capturas` de la
+última ejecución del flujo y copia los PNG a `docs/img/`.

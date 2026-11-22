@@ -71,6 +71,9 @@
   table { border-collapse: collapse; width: 100%; margin: 12px 0; display: block; overflow-x: auto; }
   th, td { border: 1px solid var(--borde); padding: 8px 10px; text-align: left; vertical-align: top; }
   th { background: var(--caja); }
+  figure { margin: 20px 0; }
+  figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--borde); border-radius: 10px; }
+  figcaption { color: var(--suave); font-size: 0.9rem; margin-top: 6px; }
   footer { margin-top: 48px; color: var(--suave); font-size: 0.9rem; border-top: 1px solid var(--borde); padding-top: 12px; }
 </style>
 </head>
@@ -165,6 +168,11 @@
   Si dice «Conecta el Xiaomi por USB», revisa la sección de <a href="#problemas">solución de problemas</a>.
 </div>
 
+<figure>
+  <img src="img/espera.png" alt="Pantalla inicial de Conector Xiaomi con las instrucciones para conectar el celular">
+  <figcaption>Pantalla inicial: la app espera a que conectes el celular y recuerda los pasos para activar el modo PTP.</figcaption>
+</figure>
+
 <h2 id="importar">4. Importar fotos paso a paso</h2>
 <ol>
   <li><strong>Elige el celular.</strong> Selecciónalo en la barra lateral. La app muestra «Abriendo sesión…» y luego «Leyendo fotos…» con un contador. Con miles de fotos puede tardar unos minutos.</li>
@@ -181,6 +189,26 @@
   <li><strong>Elige cómo organizar</strong> (ver siguiente sección).</li>
   <li><strong>Pulsa «Importar N»</strong>, donde N es el número de elementos seleccionados. El registro de la parte inferior muestra el avance y, al final, cuántas se importaron, cuántas se omitieron por duplicadas y cuántas fallaron.</li>
 </ol>
+
+<figure>
+  <img src="img/galeria.png" alt="Galería de Conector Xiaomi con diez fotos seleccionadas y otras ya importadas atenuadas">
+  <figcaption>
+    Galería con diez fotos seleccionadas (borde azul y marca de verificación). Las fotos con una flecha de descarga y
+    atenuadas ya se importaron antes. En la barra inferior están la carpeta de destino, el modo de organización, el
+    interruptor de borrado y el botón Importar.
+  </figcaption>
+</figure>
+
+<figure>
+  <img src="img/importacion.png" alt="Conector Xiaomi tras importar, con el resumen en el registro inferior">
+  <figcaption>Al terminar, el registro inferior resume cuántas fotos se importaron, cuántas se omitieron por duplicadas y cuántas fallaron.</figcaption>
+</figure>
+
+<div class="nota">
+  <strong>Sobre las imágenes de este manual</strong>
+  Las capturas las genera automáticamente la propia aplicación compilada en un Mac de GitHub, usando un celular y
+  fotos ficticias dibujadas por código. Sirven para ilustrar la interfaz; tus fotos reales aparecerán en lugar de estas.
+</div>
 
 <h2 id="opciones">5. Opciones de importación</h2>
 <h3>Organizar (carpetas por fecha)</h3>
