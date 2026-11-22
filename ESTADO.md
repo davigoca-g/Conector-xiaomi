@@ -1,6 +1,6 @@
 # Estado del proyecto (para continuar en el Mac)
 
-Última actualización: 2026-11-22 (versión 1.2.2-prueba)
+Última actualización: 2026-11-22 (versión 1.2.2-prueba, probada)
 
 ## Objetivo
 App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular e importarlas al Mac.
@@ -26,7 +26,7 @@ App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular 
   artefacto `ConectorXiaomi-capturas`; ese paso tiene `continue-on-error` para no bloquear el instalador.
 - Modo de demostración (`Captura.swift`): con las variables `CONECTOR_CAPTURAS` y `CONECTOR_ESCENA` la app carga un celular y
   fotos ficticias, guarda un PNG de su ventana y se cierra. Sin esas variables no cambia nada. Por eso `PhotoItem.file` es opcional.
-- Funciones añadidas (compilan en Actions, **sin probar con el celular**):
+- Funciones añadidas (compilan en Actions; ver la sección «Probado con el celular real» para lo ya verificado):
   - Vista previa de video: descarga a carpeta temporal y reproduce con AVKit.
   - «Importar solo lo nuevo» en la barra superior.
   - Copia segura con archivos `.parte`, cancelar entre archivos y reanudar; lo pendiente o fallido queda seleccionado y al
@@ -34,10 +34,10 @@ App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular 
   - Barra con tamaño por copiar, espacio libre en el destino, rechazo si no cabe y tiempo restante estimado.
 - Selección por lotes (menú «Seleccionar por lote» de la barra superior): todo, último mes, últimos 3 meses, último semestre,
   último año, cada año que tenga fotos y un rango de fechas libre. Por defecto omite lo ya importado (se puede desactivar).
-  Pensado para pasar unas 24.000 fotos en tandas. **Sin probar con el celular.**
+  Pensado para pasar unas 24.000 fotos en tandas. Probada con el celular real en la 1.2.2.
 - Vista de lista sin miniaturas como modo por defecto (selector «Lista / Miniaturas» en la barra superior): no se pide ninguna
   miniatura al celular, y la vista previa, desde el ojo o con doble clic, avisa que puede demorar y solo descarga al confirmar.
-  En modo miniaturas la vista previa carga de inmediato como antes. **Sin probar con el celular.**
+  En modo miniaturas la vista previa carga de inmediato como antes. Probada con el celular real en la 1.2.2.
 - Corrección de la vista previa (la primera prueba real nunca cargaba): la imagen se decodifica antes de borrar el archivo
   temporal, se reduce a 2400 px, y la ventana muestra la miniatura mientras baja el archivo completo, con un mensaje claro si
   falla. Causas probables aún sin confirmar: lectura perezosa de `NSImage(contentsOf:)` o descarga en cola detrás de las miniaturas.
@@ -50,27 +50,25 @@ App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular 
   subió de 900 a 1150 px para que toda la barra superior (incluido «Seleccionar por lote» y el selector de vista) se vea
   sin plegarse bajo «>>».
 
+## Probado con el celular real
+La versión **1.2.2-prueba** se probó con el Xiaomi real y el usuario confirmó que funciona: conexión y lectura de la galería,
+vista de lista, selección por lotes, importación masiva (unas 24.000 fotos en tandas) y vista previa. El cierre inesperado
+que ocurría en la 1.2.1 al iniciar una importación masiva quedó resuelto: la causa era la carrera de datos en
+`ImportedIndex` (el hilo de importación escribía el conjunto mientras la interfaz lo leía) y la reescritura del JSON tras
+cada foto. No se llegó a revisar el informe del fallo de macOS; la corrección se dio por buena porque el problema no volvió.
+
 ## Pendiente / riesgos
-00. **La primera importación masiva cerró la app** («Conector Xiaomi se cerró inesperadamente») en la versión 1.2.1. Causa
-   probable, corregida en 1.2.2 y sin confirmar: carrera de datos en `ImportedIndex` (el hilo de importación escribía el
-   conjunto mientras la interfaz lo leía) y reescritura del JSON tras cada foto. Falta el informe del fallo
-   («ConectorXiaomi-…ips», en Ajustes del Sistema ▸ Privacidad y seguridad ▸ Análisis y mejoras ▸ Datos de análisis) para
-   confirmarlo. Si la 1.2.2 vuelve a cerrarse, ese informe es lo primero que hay que revisar; otra sospecha es la memoria.
-0. Probar con el celular real la **vista de lista**, la **selección por lotes** (por año y por rango) y la **vista previa**
-   corregida. Con unas 24.000 fotos, comprobar cuánto tarda «Leyendo fotos…»: cada foto refresca la interfaz y puede ser lento.
-1. **Nunca se probó con el celular real.** Es lo principal. Compilar no garantiza que el delegado de ImageCaptureCore
-   funcione bien. Por eso el lanzamiento está marcado como pre-lanzamiento.
-2. Comprobar que el celular aparece en la barra lateral y carga miniaturas.
-3. Probar importar 1 foto; verificar fecha, carpeta y duplicados.
-4. Probar el borrado en el celular con una sola foto (puede no estar permitido por PTP).
+1. La 1.2.2 sigue publicada como pre-lanzamiento. Falta decidir si se promueve a versión estable.
+2. Sin reporte explícito: verificar la fecha conservada, las carpetas y la detección de duplicados en lo ya importado.
+3. Probar el borrado en el celular con una sola foto (puede no estar permitido por PTP).
    Probar también cancelar a mitad de una importación y reanudar, y desconectar el cable a propósito para ver que no queda
    ningún `.parte`.
-5. Comprobar si macOS pide algún permiso extra para leer el celular o escribir en la carpeta de destino. El manual lo
+4. Comprobar si macOS pide algún permiso extra para leer el celular o escribir en la carpeta de destino. El manual lo
    menciona como posible, pero no está verificado.
-6. Probar la vista previa de video con un video real, incluido uno largo o en 4K: se descarga entero antes de reproducir.
-7. Fotos de 200 MP: posible lentitud en la vista previa completa.
-8. Firma con Apple Developer ID y notarización: evitaría el bloqueo de la primera apertura, cuesta USD 99 al año. No hecho.
-9. Los textos de solución de problemas del manual son previsiones: corregirlos con lo que se observe en la prueba real.
+5. Probar la vista previa de video con un video real, incluido uno largo o en 4K: se descarga entero antes de reproducir.
+6. Fotos de 200 MP: posible lentitud en la vista previa completa (no se reportó, pero tampoco se confirmó).
+7. Firma con Apple Developer ID y notarización: evitaría el bloqueo de la primera apertura, cuesta USD 99 al año. No hecho.
+8. Los textos de solución de problemas del manual son previsiones: corregirlos con lo que se observe en la prueba real.
 
 ## Cómo seguir
 ```bash
