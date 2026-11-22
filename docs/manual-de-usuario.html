@@ -176,11 +176,13 @@
 <h2 id="importar">4. Importar fotos paso a paso</h2>
 <ol>
   <li><strong>Elige el celular.</strong> Selecciónalo en la barra lateral. La app muestra «Abriendo sesión…» y luego «Leyendo fotos…» con un contador. Con miles de fotos puede tardar unos minutos.</li>
-  <li><strong>Mira la galería.</strong> Verás las miniaturas de las fotos y los videos. Pasa el cursor sobre una miniatura para ver el nombre del archivo, la fecha y si ya fue importada. Haz <strong>doble clic</strong> para ver la vista previa y <strong>Cerrar</strong> (o la tecla <kbd>Esc</kbd>) para volver. En los videos, la app primero descarga el archivo completo a una carpeta temporal y luego lo reproduce con controles de pausa y avance; el archivo temporal se borra al cerrar la vista previa.</li>
+  <li><strong>Mira la galería.</strong> Por defecto verás una <strong>lista</strong> sin miniaturas, con el nombre, la fecha, el tamaño y si cada foto o video ya fue importado. Es la vista más rápida con bibliotecas muy grandes, porque no le pide nada al celular. Con el selector <strong>Lista / Miniaturas</strong> de la barra superior puedes cambiar a la cuadrícula de miniaturas; con miles de fotos esa vista es mucho más lenta.
+    <br>Para ver una foto o un video, pulsa el icono del ojo de la fila o haz <strong>doble clic</strong>. En la vista de lista la app te avisa de que hay que descargar el archivo completo del celular y que puede demorar; la descarga empieza solo cuando pulsas <strong>Cargar vista previa</strong>. Mientras baja se muestra la miniatura, si existe. Pulsa <strong>Cerrar</strong> (o la tecla <kbd>Esc</kbd>) para volver. En los videos, la app descarga el archivo completo a una carpeta temporal y luego lo reproduce con controles de pausa y avance; el archivo temporal se borra al cerrar la vista previa. En la vista de miniaturas la vista previa carga de inmediato, sin aviso.</li>
   <li><strong>Selecciona qué importar.</strong>
     <ul>
-      <li>Un clic en una miniatura la selecciona (aparece un borde y una marca de verificación); otro clic la deselecciona. Puedes marcar tantas como quieras, una por una.</li>
-      <li>Las fotos ya importadas se ven atenuadas y con una flecha de descarga.</li>
+      <li>Un clic en una fila de la lista, o en una miniatura, la selecciona (aparece una marca de verificación); otro clic la deselecciona. Puedes marcar tantas como quieras, una por una.</li>
+      <li>Las fotos ya importadas muestran «Ya importada» en la lista, o se ven atenuadas y con una flecha de descarga en las miniaturas.</li>
+      <li><strong>Seleccionar por lote</strong> (barra superior): marca de una vez todas las fotos de un periodo. Ofrece Todo, Último mes, Últimos 3 meses, Último semestre, Último año, un botón por cada año que tenga fotos y «Rango de fechas…», donde eliges el día inicial y el final, ambos incluidos. El interruptor <strong>Omitir las ya importadas</strong> viene activado, así cada lote solo toma lo pendiente. Cada elección reemplaza la selección anterior. Es la forma recomendable de pasar una biblioteca enorme por tandas: elige un año, pulsa Importar y repite con el siguiente.</li>
       <li><strong>Seleccionar nuevas</strong>: marca de una sola vez todo lo que aún no has importado.</li>
       <li><strong>Limpiar</strong>: quita toda la selección.</li>
       <li><strong>Importar solo lo nuevo</strong> (barra superior): selecciona lo que aún no has importado y lo importa de una vez, sin más pasos. Es el atajo para el uso habitual.</li>
@@ -194,11 +196,12 @@
 </ol>
 
 <figure>
-  <img src="img/galeria.png" alt="Galería de Conector Xiaomi con diez fotos seleccionadas y otras ya importadas atenuadas">
+  <img src="img/galeria.png" alt="Lista de Conector Xiaomi con diez elementos seleccionados y otros marcados como ya importados">
   <figcaption>
-    Galería con diez fotos seleccionadas (borde azul y marca de verificación). Las fotos con una flecha de descarga y
-    atenuadas ya se importaron antes. En la barra inferior están la carpeta de destino, el modo de organización, el
-    interruptor de borrado y el botón Importar.
+    Vista de lista con diez elementos seleccionados (fila azul y marca de verificación). Los que dicen «Ya importada»
+    se copiaron antes. En la barra inferior están la carpeta de destino, el modo de organización, el interruptor de
+    borrado y el botón Importar. Si la ventana es estrecha, los botones de la barra superior (Seleccionar por lote y el
+    selector de vista) quedan ocultos bajo el icono «>>»: ensancha la ventana para verlos.
   </figcaption>
 </figure>
 
@@ -271,7 +274,11 @@
     </tr>
     <tr>
       <td>Las miniaturas tardan o no cargan</td>
-      <td>Con miles de fotos o con fotos de 200 MP la carga es lenta. Espera a que termine el contador de «Leyendo fotos…».</td>
+      <td>Con miles de fotos o con fotos de 200 MP la carga es lenta. Cambia a la vista de <strong>Lista</strong>, que no descarga miniaturas, y espera a que termine el contador de «Leyendo fotos…».</td>
+    </tr>
+    <tr>
+      <td>La vista previa de una foto no carga o dice «No se pudo cargar»</td>
+      <td>Comprueba que el celular siga conectado y desbloqueado, y vuelve a intentarlo. Con una biblioteca muy grande el celular responde despacio y la descarga puede demorar. Si no necesitas verla, puedes importarla sin vista previa.</td>
     </tr>
     <tr>
       <td>El video tarda en empezar a reproducirse</td>
@@ -305,7 +312,8 @@
   <li>Esta versión se compiló, pero todavía no se ha probado extensamente con un celular real. Haz una prueba con pocas fotos antes de importar toda la galería.</li>
   <li>Para ver un video, la app lo descarga entero antes de reproducirlo.</li>
   <li>Cancelar espera a que termine el archivo en curso; no interrumpe una copia a medias.</li>
-  <li>La vista previa completa de fotos de 200 MP puede ser lenta.</li>
+  <li>La vista previa completa de fotos de 200 MP puede ser lenta, y con bibliotecas muy grandes el celular responde despacio.</li>
+  <li>La vista de lista y la selección por lotes se compilaron pero todavía no se han probado con un celular real ni con miles de fotos.</li>
   <li>El borrado en el celular depende de que el modelo lo permita por PTP.</li>
   <li>La app no está firmada con un certificado de Apple, por lo que macOS pide aprobarla manualmente la primera vez.</li>
 </ul>
