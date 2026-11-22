@@ -1,6 +1,6 @@
 # Estado del proyecto (para continuar en el Mac)
 
-Última actualización: 2026-11-21
+Última actualización: 2026-11-22
 
 ## Objetivo
 App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular e importarlas al Mac.
@@ -34,7 +34,8 @@ App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular 
   - Barra con tamaño por copiar, espacio libre en el destino, rechazo si no cabe y tiempo restante estimado.
 - Manual de usuario en `docs/manual-de-usuario.html`, con imágenes en `docs/img/`, actualizado con las funciones nuevas.
 - Pre-lanzamientos en GitHub Releases con el `.dmg` adjunto: `v1.0.0-prueba` (sin las funciones nuevas) y `v1.1.0-prueba`
-  (la más reciente). Pull Request #1 abierto desde la rama `ccr-a8701da9-ja6pdv` hacia `main`.
+  (la más reciente, la que debe usarse). El Pull Request #1 ya está fusionado en `main` (la rama `ccr-a8701da9-ja6pdv`
+  se conservó, pero el trabajo continúa en `main`).
 
 ## Pendiente / riesgos
 1. **Nunca se probó con el celular real.** Es lo principal. Compilar no garantiza que el delegado de ImageCaptureCore
@@ -54,7 +55,7 @@ App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular 
 ## Cómo seguir
 ```bash
 git clone https://github.com/davigoca-g/Conector-xiaomi.git
-cd Conector-xiaomi && git checkout ccr-a8701da9-ja6pdv
+cd Conector-xiaomi
 swift run
 ```
 Si el repositorio se clonó en un equipo Windows con varias cuentas de GitHub, para subir cambios hay que usar la cuenta
