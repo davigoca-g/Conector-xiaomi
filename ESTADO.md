@@ -26,9 +26,15 @@ App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular 
   artefacto `ConectorXiaomi-capturas`; ese paso tiene `continue-on-error` para no bloquear el instalador.
 - Modo de demostración (`Captura.swift`): con las variables `CONECTOR_CAPTURAS` y `CONECTOR_ESCENA` la app carga un celular y
   fotos ficticias, guarda un PNG de su ventana y se cierra. Sin esas variables no cambia nada. Por eso `PhotoItem.file` es opcional.
-- Manual de usuario en `docs/manual-de-usuario.html`, con imágenes en `docs/img/`.
-- Publicado como pre-lanzamiento `v1.0.0-prueba` en GitHub Releases con el `.dmg` adjunto, y Pull Request abierto desde la
-  rama `ccr-a8701da9-ja6pdv` hacia `main`.
+- Funciones añadidas (compilan en Actions, **sin probar con el celular**):
+  - Vista previa de video: descarga a carpeta temporal y reproduce con AVKit.
+  - «Importar solo lo nuevo» en la barra superior.
+  - Copia segura con archivos `.parte`, cancelar entre archivos y reanudar; lo pendiente o fallido queda seleccionado y al
+    cancelar no se borra nada del celular.
+  - Barra con tamaño por copiar, espacio libre en el destino, rechazo si no cabe y tiempo restante estimado.
+- Manual de usuario en `docs/manual-de-usuario.html`, con imágenes en `docs/img/`, actualizado con las funciones nuevas.
+- Pre-lanzamientos en GitHub Releases con el `.dmg` adjunto: `v1.0.0-prueba` (sin las funciones nuevas) y `v1.1.0-prueba`
+  (la más reciente). Pull Request #1 abierto desde la rama `ccr-a8701da9-ja6pdv` hacia `main`.
 
 ## Pendiente / riesgos
 1. **Nunca se probó con el celular real.** Es lo principal. Compilar no garantiza que el delegado de ImageCaptureCore
@@ -36,9 +42,11 @@ App nativa de macOS para conectar un Xiaomi por USB, leer las fotos del celular 
 2. Comprobar que el celular aparece en la barra lateral y carga miniaturas.
 3. Probar importar 1 foto; verificar fecha, carpeta y duplicados.
 4. Probar el borrado en el celular con una sola foto (puede no estar permitido por PTP).
+   Probar también cancelar a mitad de una importación y reanudar, y desconectar el cable a propósito para ver que no queda
+   ningún `.parte`.
 5. Comprobar si macOS pide algún permiso extra para leer el celular o escribir en la carpeta de destino. El manual lo
    menciona como posible, pero no está verificado.
-6. Vista previa de videos: no implementada.
+6. Probar la vista previa de video con un video real, incluido uno largo o en 4K: se descarga entero antes de reproducir.
 7. Fotos de 200 MP: posible lentitud en la vista previa completa.
 8. Firma con Apple Developer ID y notarización: evitaría el bloqueo de la primera apertura, cuesta USD 99 al año. No hecho.
 9. Los textos de solución de problemas del manual son previsiones: corregirlos con lo que se observe en la prueba real.

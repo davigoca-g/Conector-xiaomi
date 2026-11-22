@@ -176,18 +176,21 @@
 <h2 id="importar">4. Importar fotos paso a paso</h2>
 <ol>
   <li><strong>Elige el celular.</strong> Selecciónalo en la barra lateral. La app muestra «Abriendo sesión…» y luego «Leyendo fotos…» con un contador. Con miles de fotos puede tardar unos minutos.</li>
-  <li><strong>Mira la galería.</strong> Verás las miniaturas de las fotos y los videos. Pasa el cursor sobre una miniatura para ver el nombre del archivo, la fecha y si ya fue importada. Haz <strong>doble clic</strong> para ver la vista previa y <strong>Cerrar</strong> (o la tecla <kbd>Esc</kbd>) para volver.</li>
+  <li><strong>Mira la galería.</strong> Verás las miniaturas de las fotos y los videos. Pasa el cursor sobre una miniatura para ver el nombre del archivo, la fecha y si ya fue importada. Haz <strong>doble clic</strong> para ver la vista previa y <strong>Cerrar</strong> (o la tecla <kbd>Esc</kbd>) para volver. En los videos, la app primero descarga el archivo completo a una carpeta temporal y luego lo reproduce con controles de pausa y avance; el archivo temporal se borra al cerrar la vista previa.</li>
   <li><strong>Selecciona qué importar.</strong>
     <ul>
       <li>Un clic en una miniatura la selecciona (aparece un borde y una marca de verificación); otro clic la deselecciona. Puedes marcar tantas como quieras, una por una.</li>
       <li>Las fotos ya importadas se ven atenuadas y con una flecha de descarga.</li>
       <li><strong>Seleccionar nuevas</strong>: marca de una sola vez todo lo que aún no has importado.</li>
       <li><strong>Limpiar</strong>: quita toda la selección.</li>
+      <li><strong>Importar solo lo nuevo</strong> (barra superior): selecciona lo que aún no has importado y lo importa de una vez, sin más pasos. Es el atajo para el uso habitual.</li>
     </ul>
   </li>
   <li><strong>Elige la carpeta de destino.</strong> Pulsa el botón con el icono de carpeta de la barra inferior. Por defecto es tu carpeta <em>Imágenes</em>.</li>
   <li><strong>Elige cómo organizar</strong> (ver siguiente sección).</li>
-  <li><strong>Pulsa «Importar N»</strong>, donde N es el número de elementos seleccionados. El registro de la parte inferior muestra el avance y, al final, cuántas se importaron, cuántas se omitieron por duplicadas y cuántas fallaron.</li>
+  <li><strong>Revisa el espacio.</strong> Bajo los controles aparece «Por copiar», el tamaño de lo seleccionado que aún no se ha importado, junto al espacio libre del disco de destino. Si lo seleccionado no cabe, el texto se pone en rojo y al pulsar Importar la app no copia nada y explica cuánto falta.</li>
+  <li><strong>Pulsa «Importar N»</strong>, donde N es el número de elementos seleccionados. Mientras copia, la barra muestra cuántos archivos van, los bytes copiados y un tiempo restante estimado (aparece después de unos segundos, cuando ya se puede medir la velocidad). Al final, el registro indica cuántas se importaron, cuántas se omitieron por duplicadas y cuántas fallaron.</li>
+  <li><strong>Cancelar y reanudar (opcional).</strong> El botón <strong>Cancelar</strong> detiene la importación: el archivo en curso termina de copiarse y los siguientes quedan sin importar. Lo pendiente queda seleccionado; para reanudar, pulsa Importar otra vez y la app omite lo que ya se copió.</li>
 </ol>
 
 <figure>
@@ -229,8 +232,13 @@
   cursor y se omiten, así que puedes importar el mismo celular muchas veces sin repetir archivos.
 </p>
 
-<h3>Verificación tras copiar</h3>
-<p>Después de copiar cada archivo, la app compara su tamaño con el del original. Si no coinciden, lo cuenta como fallido.</p>
+<h3>Verificación tras copiar y copia segura</h3>
+<p>
+  Cada archivo se copia primero con la extensión <code>.parte</code> y solo recibe su nombre definitivo cuando su tamaño
+  coincide con el del original. Así, si se desconecta el cable a mitad de una foto, no queda en tu carpeta un archivo
+  incompleto con apariencia de bueno: el <code>.parte</code> se elimina y la foto cuenta como fallida. Las fotos fallidas
+  quedan seleccionadas para que las reintentes con un solo clic en Importar.
+</p>
 
 <h2 id="borrar">6. Borrar del celular tras importar</h2>
 <p>
@@ -242,6 +250,7 @@
   Los archivos borrados del celular no pasan por ninguna papelera. Antes de usar esta opción, prueba con una sola foto,
   comprueba que se abre bien en el Mac y, mejor aún, ten una copia de seguridad adicional. Algunos celulares no permiten
   borrar archivos por PTP; en ese caso la importación funciona, pero las fotos siguen en el celular.
+  Si cancelas una importación, la app no borra nada del celular; el borrado se hará cuando termines de importar todo.
 </div>
 
 <h2 id="problemas">7. Solución de problemas</h2>
@@ -265,8 +274,16 @@
       <td>Con miles de fotos o con fotos de 200 MP la carga es lenta. Espera a que termine el contador de «Leyendo fotos…».</td>
     </tr>
     <tr>
-      <td>«Vista previa de video no disponible»</td>
-      <td>Es una limitación actual: los videos se pueden importar, pero no previsualizar dentro de la app.</td>
+      <td>El video tarda en empezar a reproducirse</td>
+      <td>La app descarga el video completo antes de reproducirlo, así que los videos largos o en 4K tardan. Espera a que termine «Descargando video…».</td>
+    </tr>
+    <tr>
+      <td>«Espacio insuficiente en el destino»</td>
+      <td>Lo seleccionado no cabe en el disco. Libera espacio, elige otra carpeta de destino (por ejemplo, un disco externo) o importa por tandas.</td>
+    </tr>
+    <tr>
+      <td>Se cortó el cable o cancelé a mitad de la importación</td>
+      <td>Vuelve a conectar y pulsa <strong>Importar solo lo nuevo</strong>, o Importar si lo pendiente sigue seleccionado. No se repite lo ya copiado.</td>
     </tr>
     <tr>
       <td>macOS pide permiso para acceder a una carpeta</td>
@@ -286,7 +303,8 @@
 <h2 id="limites">8. Limitaciones conocidas</h2>
 <ul>
   <li>Esta versión se compiló, pero todavía no se ha probado extensamente con un celular real. Haz una prueba con pocas fotos antes de importar toda la galería.</li>
-  <li>No hay vista previa de videos.</li>
+  <li>Para ver un video, la app lo descarga entero antes de reproducirlo.</li>
+  <li>Cancelar espera a que termine el archivo en curso; no interrumpe una copia a medias.</li>
   <li>La vista previa completa de fotos de 200 MP puede ser lenta.</li>
   <li>El borrado en el celular depende de que el modelo lo permita por PTP.</li>
   <li>La app no está firmada con un certificado de Apple, por lo que macOS pide aprobarla manualmente la primera vez.</li>

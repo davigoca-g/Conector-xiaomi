@@ -12,10 +12,13 @@ el celular debe estar en modo **«Transferir fotos (PTP)»**:
 
 ## Funciones
 - Detección automática del celular y lectura de DCIM (fotos y videos).
-- Miniaturas, selección múltiple y vista previa (doble clic).
+- Miniaturas, selección múltiple y vista previa de fotos y videos (doble clic).
+- Botón «Importar solo lo nuevo» para importar en un paso lo que aún no se ha copiado.
 - Importación a carpeta elegida, organizada por Año/Mes, Año/Mes/Día o plana.
 - Detección de duplicados (índice persistente + comparación en destino).
-- Verificación de tamaño tras copiar; opción de borrar del celular solo lo verificado.
+- Verificación de tamaño tras copiar, con copia segura mediante archivos `.parte`; opción de borrar del celular solo lo verificado.
+- Cancelar y reanudar la importación sin repetir lo ya copiado.
+- Aviso del tamaño a copiar y del espacio libre en el destino, rechazo si no cabe y tiempo restante estimado durante la copia.
 
 ## Compilar
 ```bash
