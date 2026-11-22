@@ -272,7 +272,8 @@ extension DeviceManager: ICCameraDeviceDelegate {
         }
     }
 
-    func cameraDevice(_ camera: ICCameraDevice, didReceiveMetadataFor item: ICCameraItem) {}
+    func cameraDevice(_ camera: ICCameraDevice, didReceiveMetadata metadata: [AnyHashable: Any]?,
+                      for item: ICCameraItem, error: Error?) {}
     func cameraDevice(_ camera: ICCameraDevice, didRenameItems items: [ICCameraItem]) {}
     func cameraDeviceDidChangeCapability(_ camera: ICCameraDevice) {}
     func cameraDevice(_ camera: ICCameraDevice, didReceivePTPEvent eventData: Data) {}
